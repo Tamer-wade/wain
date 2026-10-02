@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>وين هالصورة؟ 🌍</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Cairo', sans-serif;
+    background: linear-gradient(-45deg, #0f172a, #1e1b4b, #083344, #1e1b4b);
+    background-size: 400% 400%;
+    animation: bgShift 18s ease infinite;
+    color:#f1f5f9; min-height:100vh; overflow-x:hidden;
+  }
+  @keyframes bgShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+  .screen { display:none; min-height:100vh; padding:24px 16px 48px; max-width:860px; margin:0 auto; }
+  .screen.active { display:block; animation:fadeUp .5s ease; }
+  @keyframes fadeUp { from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:translateY(0)} }
+
+  .intro { text-align:center; padding-top:8vh; position:relative; }
+  .float-emoji { position:absolute; font-size:2rem; opacity:.25; animation:floatY 6s ease-in-out infinite; pointer-events:none; }
+  @keyframes floatY { 0%,100%{transform:translateY(0) rotate(-6deg)} 50%{transform:translateY(-24px) rotate(8deg)} }
+  .logo { font-size:clamp(3rem,10vw,5rem); font-weight:900;
+    background:linear-gradient(90deg,#fbbf24,#f472b6,#38bdf8,#fbbf24);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shine 6s linear infinite; }
+  @keyframes shine { to{background-position:300% 0} }
+  .tagline { color:#cbd5e1; font-size:1.15rem; margin:12px 0 32px; }
+  .features { display:grid; gap:12px; max-width:520px; margin:0 auto 36px; text-align:right; }
+  .feature { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:14px 18px; backdrop-filter:blur(8px); }
+
+  .btn { font-family:'Cairo',sans-serif; font-weight:700; font-size:1.1rem; border:none; cursor:pointer;
+    border-radius:999px; padding:14px 44px; transition:transform .15s ease, box-shadow .15s ease; }
+  .btn:active { transform:scale(.96); }
+  .btn-gold { background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#1e1b4b; box-shadow:0 8px 24px rgba(245,158,11,.35); }
+  .btn-gold:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(245,158,11,.5); }
+  .btn-ghost { background:rgba(255,255,255,.08); color:#e2e8f0; border:1px solid rgba(255,255,255,.15); }
+  .btn-ghost:hover { background:rgba(255,255,255,.15); }
+
+  h2.section-title { text-align:center; font-size:2rem; margin:24px 0 8px; }
+  p.section-sub { text-align:center; color:#94a3b8; margin-bottom:32px; }
+  .levels { display:grid; gap:18px; }
+  @media(min-width:640px){ .levels{ grid-template-columns:repeat(3,1fr);} }
+  .level-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:20px;
+    padding:28px 20px; text-align:center; cursor:pointer; backdrop-filter:blur(8px); transition:transform .2s ease, border-color .2s ease; }
+  .level-card:hover { transform:translateY(-6px); border-color:#fbbf24; }
+  .level-emoji { font-size:3rem; }
+  .level-name { font-weight:900; font-size:1.3rem; margin:10px 0 4px; }
+  .level-desc { color:#94a3b8; font-size:.9rem; margin-bottom:8px; }
+  .level-best { color:#fbbf24; font-size:.85rem; font-weight:700; min-height:1.2em; }
+
+  .game-top { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+  .badge { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); padding:6px 16px; border-radius:999px; font-weight:700; font-size:.95rem; }
+  .badge.score { color:#fbbf24; border-color:rgba(251,191,36,.4); }
+  .badge.streak.hot { color:#f87171; border-color:rgba(248,113,113,.5); animation:pulse 1s infinite; }
+  @keyframes pulse { 50%{transform:scale(1.06)} }
+  .round-label { text-align:center; color:#94a3b8; font-size:.95rem; margin-bottom:12px; }
+  .timer-track { height:8px; background:rgba(255,255,255,.1); border-radius:99px; overflow:hidden; margin-bottom:16px; }
+  .timer-bar { height:100%; width:100%; background:linear-gradient(90deg,#34d399,#fbbf24,#ef4444); border-radius:99px; transition:width 1s linear; }
+
+  .photo-wrap { position:relative; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.12); border-radius:22px; overflow:hidden; }
+  #photo { width:100%; height:min(52vh,420px); object-fit:cover; display:block; background:#0b1220; }
+  .photo-nav { position:absolute; top:50%; transform:translateY(-50%); width:100%; display:flex; justify-content:space-between; padding:0 10px; pointer-events:none; }
+  .photo-nav button { pointer-events:auto; width:44px; height:44px; border-radius:50%; border:none; background:rgba(15,23,42,.65); color:#fff; font-size:1.4rem; cursor:pointer; backdrop-filter:blur(4px); transition:background .15s; }
+  .photo-nav button:hover { background:rgba(251,191,36,.85); color:#0f172a; }
+  #dots { display:flex; justify-content:center; gap:8px; padding:12px 0 4px; }
+  .dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.2); }
+  .dot.shown { background:#38bdf8; }
+  .dot.active { background:#fbbf24; transform:scale(1.3); }
+  .photo-counter { text-align:center; color:#94a3b8; font-size:.85rem; padding-bottom:10px; }
+
+  .reveal-row { display:flex; justify-content:center; margin:14px 0; }
+  #revealBtn { font-family:'Cairo',sans-serif; background:rgba(56,189,248,.12); color:#7dd3fc; border:1px dashed rgba(56,189,248,.5); padding:10px 24px; border-radius:999px; cursor:pointer; font-weight:700; transition:background .15s; }
+  #revealBtn:hover { background:rgba(56,189,248,.22); }
+  #revealBtn:disabled { opacity:.35; cursor:default; }
+
+  .answers { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+  .answer-btn { font-family:'Cairo',sans-serif; font-size:1.15rem; font-weight:700; padding:16px 10px; border-radius:16px; border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.07); color:#f1f5f9; cursor:pointer; transition:all .15s ease; }
+  .answer-btn:hover:not(:disabled) { background:rgba(251,191,36,.15); border-color:#fbbf24; transform:translateY(-2px); }
+  .answer-btn:disabled { cursor:default; }
+  .answer-btn.correct { background:rgba(52,211,153,.25)!important; border-color:#34d399!important; color:#6ee7b7!important; }
+  .answer-btn.wrong { background:rgba(239,68,68,.25)!important; border-color:#ef4444!important; color:#fca5a5!important; }
+
+  .feedback { text-align:center; min-height:2.2em; font-weight:700; font-size:1.15rem; margin-top:14px; }
+  .feedback.good { color:#34d399; } .feedback.bad { color:#f87171; }
+  .next-row { display:flex; justify-content:center; margin-top:6px; }
+  .hidden { display:none !important; }
+  .loading { text-align:center; padding:60px 20px; color:#94a3b8; }
+  .spinner { width:44px; height:44px; border:4px solid rgba(255,255,255,.15); border-top-color:#fbbf24; border-radius:50%; margin:0 auto 14px; animation:spin 1s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .error-box { text-align:center; padding:40px 20px; }
+  .error-box p { color:#fca5a5; margin-bottom:16px; }
+
+  .result { text-align:center; padding-top:8vh; }
+  .result-emoji { font-size:4rem; }
+  .result-score { font-size:clamp(3rem,10vw,4.5rem); font-weight:900; color:#fbbf24; margin:8px 0; }
+  .result-msg { font-size:1.25rem; margin-bottom:24px; }
+  .result-stats { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-bottom:36px; }
+  .stat-chip { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px 22px; min-width:110px; }
+  .stat-chip b { display:block; font-size:1.4rem; color:#38bdf8; }
+  .result-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+  .confetti { position:fixed; top:-12px; z-index:99; border-radius:2px; animation:fall linear forwards; pointer-events:none; }
+  @keyframes fall { to{ transform:translateY(110vh) rotate(720deg); opacity:.7; } }
+</style>
+</head>
+<body>
+
+<!-- ============ INTRO ============ -->
+<section id="screen-intro" class="screen active">
+  <div class="intro">
+    <span class="float-emoji" style="top:8%; right:10%;">🗼</span>
+    <span class="float-emoji" style="top:18%; left:8%; animation-delay:1.2s;">🗽</span>
+    <span class="float-emoji" style="top:42%; right:4%; animation-delay:2.1s;">🕌</span>
+    <span class="float-emoji" style="top:55%; left:6%; animation-delay:.6s;">🏙️</span>
+    <span class="float-emoji" style="top:72%; right:14%; animation-delay:1.7s;">🌉</span>
+
+    <div class="logo">وين هالصورة؟</div>
+    <p class="tagline">خمّن المدينة من الصور... <b>إذا بتقدر 😏</b></p>
+
+    <div class="features">
+      <div class="feature">🖼️ <b>صور حقيقية</b> من مقالات ويكيبيديا لكل مدينة — وكل صورة إضافية بتكشفها، نقاطك بتقل!</div>
+      <div class="feature">🔥 إجابات صحيحة ورا بعض بتشعل <b>سلسلة</b> وبزيدوا نقاطك</div>
+      <div class="feature">⏱️ عندك <b>٤٥ ثانية</b> لكل مدينة — الجريء بيجيب العالي</div>
+    </div>
+
+    <button class="btn btn-gold" onclick="showScreen('screen-levels')">يلا نلعب 🚀</button>
+  </div>
+</section>
+
+<!-- ============ LEVELS ============ -->
+<section id="screen-levels" class="screen">
+  <h2 class="section-title">اختار مستواك</h2>
+  <p class="section-sub">سهل للعرب، عالمي للمغامر، ومستحيل للمجانين 😄</p>
+  <div class="levels">
+    <div class="level-card" onclick="startGame('easy')">
+      <div class="level-emoji">🌙</div>
+      <div class="level-name">سهل</div>
+      <div class="level-desc">مدن عربية — ٥ جولات</div>
+      <div class="level-best" id="best-easy"></div>
+    </div>
+    <div class="level-card" onclick="startGame('medium')">
+      <div class="level-emoji">🌍</div>
+      <div class="level-name">عالمي</div>
+      <div class="level-desc">مدن العالم — ٦ جولات</div>
+      <div class="level-best" id="best-medium"></div>
+    </div>
+    <div class="level-card" onclick="startGame('hard')">
+      <div class="level-emoji">🔥</div>
+      <div class="level-name">مستحيل</div>
+      <div class="level-desc">لعشاق التحدي — ٥ جولات</div>
+      <div class="level-best" id="best-hard"></div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:28px;">
+    <button class="btn btn-ghost" onclick="showScreen('screen-intro')">رجوع</button>
+  </div>
+</section>
+
+<!-- ============ GAME ============ -->
+<section id="screen-game" class="screen">
+  <div class="game-top">
+    <span class="badge" id="levelBadge">🌙 سهل</span>
+    <span class="badge score">⭐ <span id="scoreVal">0</span></span>
+    <span class="badge streak" id="streakBadge">🔥 <span id="streakVal">0</span></span>
+  </div>
+  <div class="round-label" id="roundLabel"></div>
+  <div class="timer-track"><div class="timer-bar" id="timerBar"></div></div>
+
+  <div class="photo-wrap">
+    <img id="photo" alt="صورة المدينة">
+    <div class="photo-nav">
+      <button onclick="stepPhoto(1)" aria-label="التالي">‹</button>
+      <button onclick="stepPhoto(-1)" aria-label="السابق">›</button>
+    </div>
+    <div id="photoLoading" class="loading hidden"><div class="spinner"></div>جاري تحميل الصور...</div>
+    <div id="photoError" class="error-box hidden">
+      <p>الصور ما عم تحمل — بتأكد إن الإنترنت شغال وجرّب تاني 😅</p>
+      <button class="btn btn-ghost" onclick="retryCity()">🔄 جرب تاني</button>
+    </div>
+  </div>
+  <div id="dots"></div>
+  <div class="photo-counter" id="photoCounter"></div>
+
+  <div class="reveal-row">
+    <button id="revealBtn" onclick="revealPhoto()">🔍 أظهر صورة إضافية (−١٠ نقاط)</button>
+  </div>
+
+  <div class="answers" id="answers"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="next-row"><button id="nextBtn" class="btn btn-gold hidden" onclick="nextCity()">المدينة الجاية 👈</button></div>
+</section>
+
+<!-- ============ RESULT ============ -->
+<section id="screen-result" class="screen">
+  <div class="result">
+    <div class="result-emoji" id="resultEmoji">🏆</div>
+    <div class="result-score"><span id="finalScore">0</span> نقطة</div>
+    <div class="result-msg" id="resultMsg"></div>
+    <div class="result-stats">
+      <div class="stat-chip"><b id="statCorrect">0</b>إجابات صحيحة</div>
+      <div class="stat-chip"><b id="statStreak">0</b>أطول سلسلة 🔥</div>
+      <div class="stat-chip"><b id="statBest">0</b>أفضل نتيجة لك</div>
+    </div>
+    <div class="result-btns">
+      <button class="btn btn-gold" onclick="startGame(state.level)">🔁 العب نفس المستوى</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-levels')">مستويات تانية</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const LEVELS = {
+  easy: { badge:'🌙 سهل', key:'easy', cities:[
+    {name:'بيروت',      wiki:'Beirut',        options:['بيروت','عمّان','دمشق','الدوحة']},
+    {name:'القاهرة',    wiki:'Cairo',         options:['القاهرة','الإسكندرية','بغداد','الخرطوم']},
+    {name:'مراكش',      wiki:'Marrakesh',     options:['مراكش','فاس','الجزائر العاصمة','أسوان']},
+    {name:'دبي',        wiki:'Dubai',         options:['دبي','الدوحة','أبوظبي','الكويت']},
+    {name:'عمّان',      wiki:'Amman',         options:['عمّان','بيروت','دمشق','مسقط']},
+  ]},
+  medium: { badge:'🌍 عالمي', key:'medium', cities:[
+    {name:'باريس',        wiki:'Paris',            options:['باريس','روما','لندن','مدريد']},
+    {name:'طوكيو',        wiki:'Tokyo',            options:['طوكيو','أوساكا','سول','بكين']},
+    {name:'نيويورك',      wiki:'New York City',    options:['نيويورك','شيكاغو','بوسطن','تورونتو']},
+    {name:'لندن',         wiki:'London',           options:['لندن','باريس','دبلن','أمستردام']},
+    {name:'روما',         wiki:'Rome',             options:['روما','أثينا','مدريد','بودابست']},
+    {name:'ريو دي جانيرو',wiki:'Rio de Janeiro',   options:['ريو دي جانيرو','بوينس آيرس','ليما','ساو باولو']},
+  ]},
+  hard: { badge:'🔥 مستحيل', key:'hard', cities:[
+    {name:'هافانا',    wiki:'Havana',     options:['هافانا','مكسيكو سيتي','سان خوان','كاراكاس']},
+    {name:'كيوتو',     wiki:'Kyoto',      options:['كيوتو','طوكيو','نارا','سيول']},
+    {name:'كيب تاون',  wiki:'Cape Town',  options:['كيب تاون','الدار البيضاء','نيروبي','لاغوس']},
+    {name:'ليوبليانا', wiki:'Ljubljana',  options:['ليوبليانا','براغ','بودابست','زغرب']},
+    {name:'إشبيلية',   wiki:'Seville',    options:['إشبيلية','غرناطة','قرطبة','لشبونة']},
+  ]},
+};
+
+const TIME_PER_CITY = 45;
+const cache = {};
+const BAD_FILE = /map|logo|flag|icon|locator|symbol|seal|emblem|chart|diagram|\.ogg|\.ogv|\.webm|\.svg|\.tif|audio|sound|video|poster|coat of arms/i;
+
+const state = {
+  level:null, order:[], idx:0, score:0, streak:0, bestStreak:0, correct:0,
+  images:[], photoIdx:0, viewIdx:0, answered:false, timer:null, timeLeft:TIME_PER_CITY, current:null
+};
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-levels') refreshBest();
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function refreshBest(){
+  ['easy','medium','hard'].forEach(k=>{
+    const v = localStorage.getItem('wain-best-'+k);
+    document.getElementById('best-'+k).textContent = v ? '🏆 أفضل نتيجة: '+v : '';
+  });
+}
+
+function startGame(levelKey){
+  const lvl = LEVELS[levelKey];
+  state.level = levelKey;
+  state.order = shuffle([...lvl.cities]);
+  state.idx = 0; state.score = 0; state.streak = 0; state.bestStreak = 0; state.correct = 0;
+  document.getElementById('levelBadge').textContent = lvl.badge;
+  updateHud();
+  showScreen('screen-game');
+  loadCity();
+}
+
+function updateHud(){
+  document.getElementById('scoreVal').textContent = state.score;
+  document.getElementById('streakVal').textContent = state.streak;
+  document.getElementById('streakBadge').classList.toggle('hot', state.streak >= 3);
+}
+
+async function fetchImages(title){
+  if(cache[title]) return cache[title];
+  const api = 'https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*'
+    + '&generator=images&titles=' + encodeURIComponent(title)
+    + '&gimlimit=40&prop=imageinfo&iiprop=url%7Csize&iiurlwidth=1000';
+  const res = await fetch(api);
+  const data = await res.json();
+  let imgs = (data.query && data.query.pages ? data.query.pages : [])
+    .filter(p => p.imageinfo && p.imageinfo[0] && p.imageinfo[0].width >= 500 && !BAD_FILE.test(p.title))
+    .map(p => ((p.imageinfo[0].thumburl || p.imageinfo[0].url || '').split('?')[0]))
+    .filter(u => /\.(jpe?g|png|webp)$/i.test(u));
+  imgs = [...new Set(imgs)];
+  if(imgs.length < 1){
+    const r2 = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title));
+    const d2 = await r2.json();
+    let t = (d2.thumbnail && d2.thumbnail.source) || (d2.originalimage && d2.originalimage.source) || '';
+    t = t.replace(/\/\d+px-/, '/1000px-').split('?')[0];
+    if(t) imgs = [t];
+  }
+  if(imgs.length < 1) throw new Error('no images');
+  imgs = imgs.slice(0, 5);
+  cache[title] = imgs;
+  return imgs;
+}
+
+async function loadCity(){
+  clearInterval(state.timer);
+  state.current = state.order[state.idx];
+  state.answered = false;
+  state.photoIdx = 0;
+  state.viewIdx = 0;
+  document.getElementById('roundLabel').textContent = 'المدينة ' + (state.idx+1) + ' من ' + state.order.length;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('photo').style.opacity = 0;
+  document.getElementById('photoLoading').classList.remove('hidden');
+  document.getElementById('photoError').classList.add('hidden');
+
+  try {
+    state.images = await fetchImages(state.current.wiki);
+    document.getElementById('photoLoading').classList.add('hidden');
+    renderPhoto();
+    buildAnswers();
+    startTimer();
+  } catch(e) {
+    document.getElementById('photoLoading').classList.add('hidden');
+    document.getElementById('photoError').classList.remove('hidden');
+  }
+}
+
+function renderPhoto(){
+  if(!state.images.length) return;
+  const img = document.getElementById('photo');
+  img.onerror = () => {
+    state.images.splice(state.viewIdx, 1);
+    if(!state.images.length){ document.getElementById('photoError').classList.remove('hidden'); return; }
+    state.viewIdx = Math.min(state.viewIdx, state.images.length-1);
+    state.photoIdx = Math.min(state.photoIdx, state.images.length-1);
+    renderPhoto();
+  };
+  img.src = state.images[state.viewIdx];
+  img.style.opacity = 1;
+  document.getElementById('photoCounter').textContent = 'الصورة ' + (state.viewIdx+1) + ' من ' + state.images.length;
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  state.images.forEach((_,i)=>{
+    const d = document.createElement('span');
+    d.className = 'dot' + (i <= state.photoIdx ? ' shown' : '') + (i === state.viewIdx ? ' active' : '');
+    dots.appendChild(d);
+  });
+  document.getElementById('revealBtn').disabled = state.photoIdx >= state.images.length - 1;
+}
+
+function stepPhoto(dir){
+  if(!state.images.length) return;
+  const newIdx = state.viewIdx + dir;
+  if(newIdx < 0 || newIdx > state.photoIdx) return;
+  state.viewIdx = newIdx;
+  renderPhoto();
+}
+function revealPhoto(){
+  if(state.photoIdx < state.images.length-1){
+    state.photoIdx++;
+    state.viewIdx = state.photoIdx;
+    renderPhoto();
+  }
+}
+
+function buildAnswers(){
+  const box = document.getElementById('answers');
+  box.innerHTML = '';
+  shuffle([...state.current.options]).forEach(opt=>{
+    const b = document.createElement('button');
+    b.className = 'answer-btn';
+    b.textContent = opt;
+    b.onclick = () => answer(opt, b);
+    box.appendChild(b);
+  });
+}
+
+function startTimer(){
+  state.timeLeft = TIME_PER_CITY;
+  updateTimerBar();
+  state.timer = setInterval(()=>{
+    state.timeLeft--;
+    updateTimerBar();
+    if(state.timeLeft <= 0){ clearInterval(state.timer); answer(null, null); }
+  }, 1000);
+}
+function updateTimerBar(){
+  document.getElementById('timerBar').style.width = (state.timeLeft / TIME_PER_CITY * 100) + '%';
+}
+
+function answer(chosen, btn){
+  if(state.answered) return;
+  state.answered = true;
+  clearInterval(state.timer);
+
+  const correct = state.current.name;
+  const buttons = document.querySelectorAll('.answer-btn');
+  buttons.forEach(b=>{
+    b.disabled = true;
+    if(b.textContent === correct) b.classList.add('correct');
+  });
+
+  const fb = document.getElementById('feedback');
+  let gained = 0;
+
+  if(chosen === correct){
+    state.streak++;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    state.correct++;
+    const base = (state.images.length - state.viewIdx) * 10;
+    const bonus = (state.streak - 1) * 5;
+    gained = base + bonus;
+    state.score += gained;
+    fb.textContent = 'صح عليك! هاي ' + correct + ' 🎉  +'+gained+' نقطة' + (bonus ? ' (سلسلة 🔥)' : '');
+    fb.className = 'feedback good';
+  } else {
+    if(btn) btn.classList.add('wrong');
+    state.streak = 0;
+    fb.textContent = chosen === null
+      ? 'انتهى الوقت! هاي ' + correct + ' ⏰'
+      : 'غلط! هاي ' + correct + ' 😅';
+    fb.className = 'feedback bad';
+  }
+
+  updateHud();
+  document.getElementById('nextBtn').textContent =
+    state.idx === state.order.length - 1 ? 'شوف نتيجتك 🏆' : 'المدينة الجاية 👈';
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+function retryCity(){ loadCity(); }
+
+function nextCity(){
+  state.idx++;
+  if(state.idx >= state.order.length) showResult();
+  else loadCity();
+}
+
+function showResult(){
+  const total = state.order.length;
+  const ratio = state.correct / total;
+  const bestKey = 'wain-best-' + state.level;
+  const prevBest = parseInt(localStorage.getItem(bestKey) || '0');
+  if(state.score > prevBest) localStorage.setItem(bestKey, String(state.score));
+
+  document.getElementById('finalScore').textContent = state.score;
+  document.getElementById('statCorrect').textContent = state.correct + '/' + total;
+  document.getElementById('statStreak').textContent = state.bestStreak;
+  document.getElementById('statBest').textContent = Math.max(prevBest, state.score);
+
+  let emoji, msg;
+  if(state.correct === total){ emoji='🏆'; msg='أسطوري! عينك ما بتغلط 🔥'; }
+  else if(ratio >= 0.6){ emoji='😎'; msg='خريطة عالمية ماشية بجيبك'; }
+  else if(ratio >= 0.4){ emoji='💪'; msg='منيح! بس فيك توصل أعلى بكتير'; }
+  else { emoji='🌱'; msg='المشوار ألف ميل بيبدأ بخطوة... جرب تاني'; }
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultMsg').textContent = msg;
+
+  showScreen('screen-result');
+  if(ratio >= 0.6) launchConfetti();
+}
+
+function launchConfetti(){
+  const colors = ['#fbbf24','#38bdf8','#f472b6','#34d399','#a78bfa'];
+  for(let i=0;i<70;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.cssText = 'right:'+Math.random()*100+'vw; background:'+colors[Math.floor(Math.random()*colors.length)]
+      + '; width:'+(6+Math.random()*8)+'px; height:'+(10+Math.random()*10)+'px;'
+      + ' animation-duration:'+(2.5+Math.random()*2.5)+'s; animation-delay:'+(Math.random()*1.5)+'s;';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 6000);
+  }
+}
+
+refreshBest();
+</script>
+</body>
+</html>
